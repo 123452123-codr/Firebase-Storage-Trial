@@ -1,5 +1,87 @@
 <!DOCTYPE html>
 <html>
-<head>
-</head>
+    <head>
+        <title>Firebase Storage</title>
+    </head>
+    <body>
+        <p>Upload an image. Only images will work.</p>
+        <br>
+        <input type="file" name="a" id="input">
+        <br>
+        <br>
+        <button id="send">Send to Database</button>
+    </body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-analytics.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCX_J_3OFvZd0Yk4zkWR_aaIaf5UMLWZGY",
+            authDomain: "trial-chat-pro.firebaseapp.com",
+            databaseURL: "https://trial-chat-pro-default-rtdb.firebaseio.com",
+            projectId: "trial-chat-pro",
+            storageBucket: "trial-chat-pro.appspot.com",
+            messagingSenderId: "646594064526",
+            appId: "1:646594064526:web:a3c0301e921af03d59d9df",
+            measurementId: "G-YEF7ZR6HRF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        var file = document.getElementById('input');
+        var send = document.getElementById('send');
+
+        send.addEventListener('click', function(){
+            const storage = getStorage();
+            const metadata = {
+                contentType: 'image/jpeg'
+            };
+
+            // Upload file and metadata to the object 'images/mountains.jpg'
+            const storageRef = ref(storage, 'images/' + file.name);
+            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+
+            // Listen for state changes, errors, and completion of the upload.
+            uploadTask.on('state_changed', (snapshot) => {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                    break;
+                    case 'running':
+                        console.log('Upload is running');
+                    break;
+                }
+            }, 
+            (error) => {
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                    case 'storage/unauthorized':
+                        // User doesn't have permission to access the object
+                    break;
+                    case 'storage/canceled':
+                        // User canceled the upload
+                    break;
+
+                    // ...
+
+                    case 'storage/unknown':
+                        // Unknown error occurred, inspect error.serverResponse
+                    break;
+                }
+            }, 
+            () => {
+                // Upload completed successfully, now we can get the download URL
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    console.log('File available at', downloadURL);
+                });
+            }
+        );
+        });
+    </script>
 </html>
