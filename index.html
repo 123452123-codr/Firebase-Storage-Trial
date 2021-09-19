@@ -10,6 +10,10 @@
         <br>
         <br>
         <button id="send">Send to Database</button>
+        <br>
+        <p>
+            <img id="photo">
+        </p>
     </body>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js";
@@ -30,8 +34,9 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
 
-        var file = document.getElementById('input');
+        var filew = document.getElementById('input').value;
         var send = document.getElementById('send');
+        var photo = document.getElementById('photo');
 
         send.addEventListener('click', function(){
             const storage = getStorage();
@@ -40,8 +45,8 @@
             };
 
             // Upload file and metadata to the object 'images/mountains.jpg'
-            const storageRef = ref(storage, 'images/' + file.name);
-            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+            const storageRef = ref(storage, 'images/' + filew.name);
+            const uploadTask = uploadBytesResumable(storageRef, filew, metadata);
 
             // Listen for state changes, errors, and completion of the upload.
             uploadTask.on('state_changed', (snapshot) => {
@@ -82,6 +87,33 @@
                 });
             }
         );
+        setTimeout(function(){
+            const storage = getStorage();
+            getDownloadURL(ref(storage, 'images/a.jpeg'))
+            .then((url) => {
+                // `url` is the download URL for 'images/stars.jpg'
+
+                // This can be downloaded directly:
+                const xhr = new XMLHttpRequest();
+                xhr.responseType = 'blob';
+                xhr.onload = (event) => {
+                    const blob = xhr.response;
+                };
+                xhr.open('GET', url);
+                xhr.send();
+
+                // Or inserted into an <img> element
+                const img = document.getElementById('myimg');
+                img.setAttribute('src', url);
+                photo.src = img;
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                alert(errorMessage);
+                console.log(errorCode);
+            });
+        }, 500);
         });
     </script>
 </html>
